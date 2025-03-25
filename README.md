@@ -1,2 +1,2 @@
-# ShomerP4P
-P4P Solver and Detection using Lie Theory
+# shomer_target
+P4P Solver and Detection using Lie Theory for tetrahedron targets
