@@ -89,13 +89,13 @@ std::optional<std::vector<BlobShomer>> ShomerCore::findAndCalcContours(const cv:
         //PARALLELIZE BLOB CALCULATIONS
         std::vector<std::future<void>> futures;
         std::mutex blobs_mutex;
-        int contours_per_thread = std::max(1, static_cast<int>(contours.size() / options.num_threads));
+        int num_threads_used = std::min(contours.size(), static_cast<size_t>(options.num_threads));
+        int contours_per_thread = contours.size() / num_threads_used;
         int remainder = contours.size() % options.num_threads;
-
-        for (int t = 0; t < options.num_threads; ++t) {
-            futures.emplace_back(std::async(std::launch::async, [this, t, contours_per_thread, remainder, &contours, &blobs, &blobs_mutex, &originalImageHSV]() {
-                int start_idx = t * contours_per_thread + std::min(t, remainder);
-                int end_idx = start_idx + contours_per_thread + (t < remainder ? 1 : 0);
+        int start_idx = 0;
+        for (int t = 0; t < num_threads_used; ++t) {
+            int end_idx = start_idx + contours_per_thread + (t < remainder ? 1 : 0);
+            futures.emplace_back(std::async(std::launch::async, [this, t, start_idx, end_idx, contours_per_thread, remainder, &contours, &blobs, &blobs_mutex, &originalImageHSV]() {
 
                 for (int i = start_idx; i < end_idx; ++i) {
                     const auto &contour = contours[i];
@@ -172,6 +172,7 @@ std::optional<std::vector<BlobShomer>> ShomerCore::findAndCalcContours(const cv:
                     blobs.emplace_back(std::move(blobShomer_));
                 }
             }));
+            start_idx = end_idx;
         }
 
         for (auto &fut : futures) {
@@ -209,13 +210,13 @@ std::optional<std::vector<BlobShomer>> ShomerCore::findAndCalcContoursMono(const
         //PARALLELIZE BLOB CALCULATIONS
         std::vector<std::future<void>> futures;
         std::mutex blobs_mutex;
-        int contours_per_thread = std::max(1, static_cast<int>(contours.size() / options.num_threads));
+              int num_threads_used = std::min(contours.size(), static_cast<size_t>(options.num_threads));
+        int contours_per_thread = contours.size() / num_threads_used;
         int remainder = contours.size() % options.num_threads;
-
-        for (int t = 0; t < options.num_threads; ++t) {
-            futures.emplace_back(std::async(std::launch::async, [this, t, contours_per_thread, remainder, &contours, &blobs, &blobs_mutex]() {
-                int start_idx = t * contours_per_thread + std::min(t, remainder);
-                int end_idx = start_idx + contours_per_thread + (t < remainder ? 1 : 0);
+        int start_idx = 0;
+        for (int t = 0; t < num_threads_used; ++t) {
+            int end_idx = start_idx + contours_per_thread + (t < remainder ? 1 : 0);
+            futures.emplace_back(std::async(std::launch::async, [this, t, start_idx, end_idx, contours_per_thread, remainder, &contours, &blobs, &blobs_mutex]() {
 
                 for (int i = start_idx; i < end_idx; ++i) {
                     const auto &contour = contours[i];
@@ -242,6 +243,7 @@ std::optional<std::vector<BlobShomer>> ShomerCore::findAndCalcContoursMono(const
                     blobs.emplace_back(std::move(blobShomer_));
                 }
             }));
+            start_idx = end_idx;
         }
 
         for (auto &fut : futures) {
