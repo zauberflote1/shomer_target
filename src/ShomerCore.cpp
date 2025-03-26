@@ -91,7 +91,7 @@ std::optional<std::vector<BlobShomer>> ShomerCore::findAndCalcContours(const cv:
         std::mutex blobs_mutex;
         int num_threads_used = std::min(contours.size(), static_cast<size_t>(options.num_threads));
         int contours_per_thread = contours.size() / num_threads_used;
-        int remainder = contours.size() % options.num_threads;
+        int remainder = contours.size() % options.num_threads_used;
         int start_idx = 0;
         for (int t = 0; t < num_threads_used; ++t) {
             int end_idx = start_idx + contours_per_thread + (t < remainder ? 1 : 0);
@@ -212,7 +212,7 @@ std::optional<std::vector<BlobShomer>> ShomerCore::findAndCalcContoursMono(const
         std::mutex blobs_mutex;
               int num_threads_used = std::min(contours.size(), static_cast<size_t>(options.num_threads));
         int contours_per_thread = contours.size() / num_threads_used;
-        int remainder = contours.size() % options.num_threads;
+        int remainder = contours.size() % num_threads_used;
         int start_idx = 0;
         for (int t = 0; t < num_threads_used; ++t) {
             int end_idx = start_idx + contours_per_thread + (t < remainder ? 1 : 0);
