@@ -1,5 +1,7 @@
 #include "ShomerCore.hpp"
 
+//TODO: MT FOR BUFFER OF IMAGES TO PROCESS
+
 ShomerCore::~ShomerCore() {
        if (process_thread_.joinable()) {
             process_thread_.join();
@@ -8,6 +10,8 @@ ShomerCore::~ShomerCore() {
 
 void ShomerCore::feed_image(ShomerImage image_) {
     //PREPROCESS IMAGE
+    cv::Mat imageMono;
+    //CONVERT IF NEEDED
     if (image_.image.channels() != 1) {
         if (options.image_type == ImageType::BGR) {
             cv::cvtColor(image_.image, imageMono, cv::COLOR_BGR2GRAY);
@@ -22,7 +26,7 @@ void ShomerCore::feed_image(ShomerImage image_) {
     } else { 
         imageMono = image_.image.clone();
     }
-    cv::Mat preprocessedImage = preprocessImage(imageMono);
+    preprocessedImage = preprocessImage(imageMono);
     std::optional<std::vector<BlobShomer>> blobShomerVec;
     //FIND CONTOURS
     if (options.mono) {
@@ -59,8 +63,10 @@ cv::Mat ShomerCore::preprocessImage(const cv::Mat& image) {
         cv::threshold(blurred, thresholded, threshValue, 255, cv::THRESH_BINARY);
         // cv::GaussianBlur(thresholded, thresholded, cv::Size(options.kernel_size_gaussian, options.kernel_size_gaussian), 1);
         cv::Mat morph_kernel = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(options.kernel_size_morph, options.kernel_size_morph));
-        cv::morphologyEx(thresholded, thresholded, cv::MORPH_CLOSE, morph_kernel, cv::Point(-1, -1), 2);
-        cv::morphologyEx(thresholded, thresholded, cv::MORPH_DILATE, morph_kernel, cv::Point(-1, -1), 1);
+        cv::morphologyEx(thresholded, thresholded, cv::MORPH_CLOSE, morph_kernel, cv::Point(-1, -1), options.it_morph_close);
+        if (options.dilate) {
+            cv::morphologyEx(thresholded, thresholded, cv::MORPH_DILATE, morph_kernel, cv::Point(-1, -1), options.it_morph_dilate);
+        }
         return thresholded;
 }
 
@@ -506,7 +512,8 @@ void ShomerCore::processBlobs(const std::vector<Blob>& blobs, const int64_t& tim
     Eigen::Matrix<double, 4, 2> undistortedSortedPoints = helper.getUndistortedSortedPoints(blobs, options.fisheye);
 
    if (undistortedSortedPoints.isZero(0)) { 
-    return;
+        result.R.setZero();
+        return;
    }
    result = engine.ShomerEngineSolver(undistortedSortedPoints);
 }
@@ -523,6 +530,13 @@ std::optional<CameraPose> ShomerCore::getPose() {
        return std::nullopt;
    }
     return result;
+}
+
+std::optional<cv::Mat> ShomerCore::getPreprocessedImage() {
+    if (preprocessedImage.empty()) {
+        return std::nullopt;
+    }
+    return preprocessedImage;
 }
 
 

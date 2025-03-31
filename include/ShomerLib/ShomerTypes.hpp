@@ -81,6 +81,8 @@ struct ShomerP4PInfo {
         size_t reject_limit;
         int kernel_size_gaussian;
         int kernel_size_morph;
+        int it_morph_close;
+        int it_morph_dilate;
         int image_threshold;
         size_t filter_size;
         size_t num_threads;
@@ -89,6 +91,7 @@ struct ShomerP4PInfo {
         bool radtan;
         bool mono;
         bool fifo;
+        bool dilate;
 
         ImageType image_type; //1 bgr, 2 yuv;
 

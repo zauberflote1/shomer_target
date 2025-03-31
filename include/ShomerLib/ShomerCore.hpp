@@ -35,6 +35,8 @@ public:
 
     std::optional<std::vector<BlobShomer>> getBlobs();
     std::optional<CameraPose> getPose();
+    std::optional<cv::Mat> getPreprocessedImage();
+
 
 
 
@@ -61,7 +63,8 @@ private:
 
 
 
-    cv::Mat imageMono;
+    cv::Mat preprocessedImage;
+
 
     std::thread process_thread_;
 

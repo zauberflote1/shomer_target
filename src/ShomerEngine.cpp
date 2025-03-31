@@ -45,7 +45,7 @@ CameraPose ShomerEngine::ShomerEngineSolver(Eigen::Matrix<double, 4, 2>& sorted_
             problem.AddResidualBlock(cost_function, nullptr, opt_params);
     }
     options.trust_region_strategy_type = ceres::DOGLEG; 
-    options.max_num_iterations = 30;
+    options.max_num_iterations = 45;
     options.function_tolerance = 1e-5;
     options.gradient_tolerance = 1e-4 * options.function_tolerance;
     options.linear_solver_type = ceres::DENSE_SCHUR;
