@@ -1,5 +1,5 @@
 #include "ShomerHelper.hpp"
-
+//TODO OVERLAY FUNCTION
 ShomerHelper::ShomerHelper(ShomerP4PInfo p4p_info_){
     p4p_info = p4p_info_;
     cameraMatrix_ = (cv::Mat_<double>(3, 3) << p4p_info.cam_intrinsics[0], 0, p4p_info.cam_intrinsics[1],
