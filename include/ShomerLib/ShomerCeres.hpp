@@ -6,25 +6,6 @@
 #include <Eigen/Core>
 #include "ShomerJacobians.hpp"
 
-/**
- * @brief Computes a 3D rotation matrix from Euler angles (phi, theta, psi).
- *
- * This function calculates the rotation matrix by applying three consecutive
- * rotations about the principal axes:
- * - phi: Rotation about the X-axis.
- * - theta: Rotation about the Y-axis.
- * - psi: Rotation about the Z-axis.
- *
- * The resulting rotation matrix is computed as Rz * Ry * Rx, where:
- * - Rx is the rotation matrix for the X-axis.
- * - Ry is the rotation matrix for the Y-axis.
- * - Rz is the rotation matrix for the Z-axis.
- *
- * @param phi Rotation angle (in radians) about the X-axis.
- * @param theta Rotation angle (in radians) about the Y-axis.
- * @param psi Rotation angle (in radians) about the Z-axis.
- * @return Eigen::Matrix3d The resulting 3x3 rotation matrix.
- */
 inline Eigen::Matrix3d computeRotationMatrix(double phi, double theta, double psi) {
     Eigen::Matrix3d Rx, Ry, Rz;
 
@@ -44,54 +25,6 @@ inline Eigen::Matrix3d computeRotationMatrix(double phi, double theta, double ps
 }
 
 
-/**
- * @class ShomerCeres
- * @brief A Ceres cost function for optimizing camera parameters based on observed and predicted points.
- *
- * This class implements a cost function for use with the Ceres Solver library. It computes the residuals
- * and optionally the Jacobian matrix for a given set of camera parameters, observed 2D points, and a 3D target point.
- *
- * @details
- * The cost function models the projection of a 3D point onto a 2D image plane using a pinhole camera model.
- * The residuals are the differences between the observed 2D points and the projected 2D points.
- *
- * @tparam ceres::SizedCostFunction<2, 6> The cost function computes 2 residuals and takes 6 parameters
- * (3 for translation and 3 for rotation).
- *
- * @note This class uses Eigen for matrix and vector operations and Ceres for rotation computations.
- *
- * @constructor
- * @param observed_point The observed 2D point in the image plane.
- * @param target The 3D target point in the world coordinate system.
- * @param focalx_length The focal length of the camera in the x direction.
- * @param focaly_length The focal length of the camera in the y direction.
- * @param cx The x-coordinate of the principal point in the image plane.
- * @param cy The y-coordinate of the principal point in the image plane.
- *
- * @method Evaluate
- * @brief Computes the residuals and optionally the Jacobian matrix for the given camera parameters.
- * @param parameters A pointer to the array of camera parameters (translation and rotation).
- * @param residuals A pointer to the array where the computed residuals will be stored.
- * @param jacobians A pointer to the array where the computed Jacobian matrix will be stored (if not null).
- * @return True if the computation is successful, false otherwise.
- *
- * @method Create
- * @brief Factory method to create a new instance of the ShomerCeres cost function.
- * @param observed_point The observed 2D point in the image plane.
- * @param target The 3D target point in the world coordinate system.
- * @param focalx_length The focal length of the camera in the x direction.
- * @param focaly_length The focal length of the camera in the y direction.
- * @param cx The x-coordinate of the principal point in the image plane.
- * @param cy The y-coordinate of the principal point in the image plane.
- * @return A pointer to the newly created ShomerCeres cost function.
- *
- * @private_member observed_point_ The observed 2D point in the image plane.
- * @private_member target_ The 3D target point in the world coordinate system.
- * @private_member focalx_length_ The focal length of the camera in the x direction.
- * @private_member focaly_length_ The focal length of the camera in the y direction.
- * @private_member cx_ The x-coordinate of the principal point in the image plane.
- * @private_member cy_ The y-coordinate of the principal point in the image plane.
- */
 class ShomerCeres: public ceres::SizedCostFunction<2, 6> {
 public:
     ShomerCeres(const Eigen::Vector2d& observed_point, const Eigen::Vector3d& target, 
