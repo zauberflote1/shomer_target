@@ -36,6 +36,7 @@ void ShomerCore::feed_image(ShomerImage image_) {
     }
     if (blobShomerVec) {
         std::vector<BlobShomer> best_blobs;
+        resultBlobs.clear();
         if (options.mono) {
             best_blobs = selectBlobsMono(blobShomerVec.value(), options.blob_config.min_circularity);
         } else {
@@ -51,7 +52,7 @@ void ShomerCore::feed_image(ShomerImage image_) {
             processBlobs(blobs, image_.timestamp);
         }
     } else {
-        printf("No valid contours found.");
+        printf("No valid contours found.\n");
     }
 }
 
@@ -78,11 +79,11 @@ std::optional<std::vector<BlobShomer>> ShomerCore::findAndCalcContours(const cv:
         cv::findContours(image, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
         auto end = std::chrono::high_resolution_clock::now(); //TIME MEASUREMENT COUNTOURS END
         std::chrono::duration<double> duration = end - start;
-        printf("Time to find contours: %f seconds", duration.count());
+        printf("Time to find contours: %f seconds\n", duration.count());
 
         //CHECK IF CONTOURS ARE VALID
         if (contours.empty() || contours.size() > 1000) {
-            printf("ERROR: %lu contours found", contours.size());
+            printf("ERROR: %lu contours found\n", contours.size());
             return std::nullopt;
         }
 
@@ -187,7 +188,7 @@ std::optional<std::vector<BlobShomer>> ShomerCore::findAndCalcContours(const cv:
 
         end = std::chrono::high_resolution_clock::now(); //TIME MEASUREMENT BLOBS END
         duration = end - start;
-        printf("Time to calculate blobs: %f seconds", duration.count());
+        printf("Time to calculate blobs: %f seconds\n", duration.count());
         return blobs;
 }
 
@@ -199,11 +200,11 @@ std::optional<std::vector<BlobShomer>> ShomerCore::findAndCalcContoursMono(const
         cv::findContours(image, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
         auto end = std::chrono::high_resolution_clock::now(); //TIME MEASUREMENT COUNTOURS END
         std::chrono::duration<double> duration = end - start;
-        printf("Time to find contours: %f seconds", duration.count());
+        printf("Time to find contours: %f seconds\n", duration.count());
 
         //CHECK IF CONTOURS ARE VALID
         if (contours.empty() || contours.size() > 1000) {
-            printf("ERROR: %lu contours found", contours.size());
+            printf("ERROR: %lu contours found\n", contours.size());
             return std::nullopt;
         }
 
@@ -258,7 +259,7 @@ std::optional<std::vector<BlobShomer>> ShomerCore::findAndCalcContoursMono(const
 
         end = std::chrono::high_resolution_clock::now(); //TIME MEASUREMENT BLOBS END
         duration = end - start;
-        printf("Time to calculate blobs: %f seconds", duration.count());
+        printf("Time to calculate blobs: %f seconds\n", duration.count());
         return blobs;
 }
 
@@ -267,7 +268,7 @@ std::vector<BlobShomer> ShomerCore::selectBlobs(const std::vector<BlobShomer>& b
         filtered_blobs.reserve(blobs.size());
 
         if (blobs.size() < 4) {
-            printf("Not enough blobs < 4.");
+            printf("Not enough blobs < 4.\n");
             return {};
         }
 
@@ -278,7 +279,7 @@ std::vector<BlobShomer> ShomerCore::selectBlobs(const std::vector<BlobShomer>& b
         }
 
         if (filtered_blobs.size() < 4) {
-            printf("Not enough blobs with required circularity.");
+            printf("Not enough blobs with required circularity.\n");
             return {};
         }
 
@@ -357,7 +358,7 @@ std::vector<BlobShomer> ShomerCore::selectBlobsMono(const std::vector<BlobShomer
     filtered_blobs.reserve(blobs.size());
 
     if (blobs.size() < 4) {
-        printf("Not enough blobs < 4.");
+        printf("Not enough blobs < 4.\n");
         return {};
     }
 
@@ -368,7 +369,7 @@ std::vector<BlobShomer> ShomerCore::selectBlobsMono(const std::vector<BlobShomer
     }
 
     if (filtered_blobs.size() < 4) {
-        printf("Not enough blobs with required circularity.");
+        printf("Not enough blobs with required circularity.\n");
         return {};
     }
 
@@ -504,7 +505,7 @@ std::vector<BlobShomer> ShomerCore::selectBlobsMono(const std::vector<BlobShomer
 //     }
 void ShomerCore::processBlobs(const std::vector<Blob>& blobs, const int64_t& timestamp) {
     if (blobs.size() < 4) {
-        printf("Not enough blobs to calculate 6DoF state.");
+        printf("Not enough blobs to calculate 6DoF state.\n");
         return;
     }
 
@@ -526,7 +527,7 @@ std::optional<std::vector<BlobShomer>> ShomerCore::getBlobs() {
 }
 
 std::optional<CameraPose> ShomerCore::getPose() {
-   if (result.R.isZero(0)) {
+   if (result.R.isZero(0) || resultBlobs.empty() ) {
        return std::nullopt;
    }
     return result;
