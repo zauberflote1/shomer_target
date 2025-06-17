@@ -22,7 +22,9 @@ find_package(Threads REQUIRED)
 file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
 # Create a static library
-add_library(ShomerLib STATIC ${SOURCES})
+# add_library(ShomerLib STATIC ${SOURCES})
+# Create a SHARED library
+add_library(ShomerLib SHARED ${SOURCES})
 
 # Properly set include directories for this library
 target_include_directories(ShomerLib PUBLIC 
