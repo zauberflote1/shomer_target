@@ -57,7 +57,9 @@ CameraPose ShomerEngine::ShomerEngineSolver(Eigen::Matrix<double, 4, 2>& sorted_
 
     //GET POSE
     CameraPose pose;
-    pose.R = computeRotationMatrix(opt_params[3], opt_params[4], opt_params[5]);
+    double R_aa[9];
+    ceres::AngleAxisToRotationMatrix(opt_params + 3, R_aa);
+    pose.R = Eigen::Map<const Eigen::Matrix<double,3,3,Eigen::RowMajor>>(R_aa);
     pose.t = Eigen::Vector3d(opt_params[0], opt_params[1], opt_params[2]);
     return pose;
     }
